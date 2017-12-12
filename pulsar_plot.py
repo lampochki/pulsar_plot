@@ -7,18 +7,7 @@ import pylab
 from mpl_toolkits.mplot3d import Axes3D
 
 
-#create('DIFX_56341_040423.s0000.b0000', 258, 'RR', 0, 'filname',)
-'''
-256*1+1=257
-256*1+2=258
-256*1+3=259
-256*2+1=513
-256*2+2=514
-256*2+3=515
-256*3+1=769
-256*3+2=770
-256*3+3=771
-'''
+#pulsar_plot.create('DIFX_56341_040423.s0000.b0000', 258, 'RR', 0, 'filname',0)
 
 def create(fn='', bn='', pp='', fi='', outfile='', per=''):
 	size=os.path.getsize(fn)
@@ -158,50 +147,3 @@ def snr_1D(s=''):
 	SNR=(A-average)/sko
 	return SNR, average, sko
 
-
-
-	'''
-A=max(srez)
-	index_a = np.where(np.in1d(srez, [A]))[0]
-	index_from=index_a[0]-5
-	index_to=index_a[0]+5
-	new_srez=
-	for elem_number in range (-5,6): #from a to b-1
-		index=index_a[0]+elem_number
-		print index
-		del srez[index]
-	average=np.mean(srez)
-	sko=std(srez)
-	SNR=(A-average)/sko
-	return SNR
-
-		headcount=0
-		headnumber=0
-		x=0
-		while headcount<size/period:
-			sw.seek(period*headnumber)
-			sync=str(sw.read(4))
-			head_version,=struct.unpack('i', sw.read(4))
-			baseline_number,=struct.unpack('i', sw.read(4))
-			MJD,=struct.unpack('i', sw.read(4))
-			seconds,=struct.unpack('d', sw.read(8))
-			config_index,=struct.unpack('i', sw.read(4))
-			source_index,=struct.unpack('i', sw.read(4))
-			freq_index,=struct.unpack('i', sw.read(4))
-			polarisation_pair=str(sw.read(2))
-			pulsar_bin,=struct.unpack('i', sw.read(4))
-			data_weight,=struct.unpack('d', sw.read(8))
-			U,=struct.unpack('d', sw.read(8))
-			V,=struct.unpack('d', sw.read(8))
-			W,=struct.unpack('d', sw.read(8))
-			if baseline_number==bn and polarisation_pair==pp and freq_index==fi:
-				for y in range (64):
-					data[x,y]= complex(struct.unpack('f', sw.read(4))[0], 
-						struct.unpack('f', sw.read(4))[0])
-				x+=1
-			headcount+=1
-			headnumber+=1
-	for elem in data:
-		if elem.any==0:
-			print 'error'
-			'''
