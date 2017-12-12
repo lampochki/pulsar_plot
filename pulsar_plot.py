@@ -24,7 +24,7 @@ def create(fn='', bn='', pp='', fi='', outfile='', per=''):
 			sync_distance+=1
 			sw.seek(sync_distance)
 			sync_search=int(struct.unpack('i', sw.read(4))[0])
-		#all accumulation periods	
+		#all accumulation periods, count for array shape	
 		if per==0:
 			while head_count<size/sync_distance:
 				sw.seek(sync_distance*current_head)
@@ -46,7 +46,6 @@ def create(fn='', bn='', pp='', fi='', outfile='', per=''):
 					accum_periods+=1
 				current_head+=1
 				head_count+=1
-
 			head_count=0
 			current_head=0
 			data=np.zeros((accum_periods,64), dtype=np.complex)
@@ -128,22 +127,22 @@ def plot(fn='', razr=''):
 
 def plot2D(s=''):
 	t=np.load('outfile.npy')
-	srez=t[s,0:]
-	print srez
-	plt.plot(srez)
+	section=t[s,0:]
+	print section
+	plt.plot(section)
 	plt.show()
 
 def snr_1D(s=''):
 	t=np.load('outfile.npy')
-	srez=t[s,0:]
-	srez=srez.tolist()
-	A=max(srez)
-	index_from=srez.index(A)-5
-	index_to=srez.index(A)+5
-	del srez[index_from:index_to]
-	print len(srez)
-	average=np.mean(srez)
-	sko=np.std(srez)
-	SNR=(A-average)/sko
-	return SNR, average, sko
+	section=t[s,0:]
+	section=section.tolist()
+	A=max(section)
+	index_from=section.index(A)-5
+	index_to=section.index(A)+5
+	del section[index_from:index_to]
+	print len(section)
+	average=np.mean(section)
+	st_deviation=np.std(section)
+	SNR=(A-average)/st_deviation
+	return SNR, average, st_deviation
 
