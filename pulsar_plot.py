@@ -103,19 +103,32 @@ def create(fn='', bn='', pp='', fi='', outfile='', per=''):
 	print data.shape
 	print data
 
-def plot(fn='', razr=''):
-	data=np.load(fn)
-	average=data.shape[0]/razr
-	new_data=np.zeros((razr,64), dtype=np.complex)
-	for x1 in range (razr):
+def snr_1D(fn='', per='', aver='', sect=''):
+	data=np.load(fn)[per,0:]
+	average=data.shape[0]/aver
+	aver_data=np.zeros((aver,64), dtype=np.complex)
+	for x1 in range (aver):
 			for x in range (average):
-				new_data[x1,0:]+=data[x1+razr*x,0:]
-	t=abs(fft.fftshift(fft.ifft(new_data)))
-	np.save('outfile', t)
+				aver_data[x1,0:]+=data[x1+aver*x,0:]
+
+	ifft_data=abs(fft.fftshift(fft.ifft(aver_data)))
+	section=ifft_data[sect,0:]
+	section=section.tolist()
+	A=max(section)
+	index_from=section.index(A)-5
+	index_to=section.index(A)+5
+	del section[index_from:index_to]
+	average=np.mean(section)
+	st_deviation=np.std(section)
+	SNR=(A-average)/st_deviation
+	return SNR, average, st_deviation
+
+def plot(fn='', razr=''):
+	np.save('outfile', ifft_data)
 	x = np.arange (0, 64, 1)
 	y = np.arange (0, razr, 1)
 	xgrid, ygrid = np.meshgrid(x, y)
-	zgrid = t
+	zgrid = ifft_data
 	x, y, z = xgrid,ygrid,zgrid
 	fig = pylab.figure()
 	axes = Axes3D(fig)
@@ -126,23 +139,12 @@ def plot(fn='', razr=''):
 	
 
 def plot2D(s=''):
-	t=np.load('outfile.npy')
-	section=t[s,0:]
+	ifft_data=np.load('outfile.npy')
+	section=ifft_data[s,0:]
 	print section
 	plt.plot(section)
 	plt.show()
 
-def snr_1D(s=''):
-	t=np.load('outfile.npy')
-	section=t[s,0:]
-	section=section.tolist()
-	A=max(section)
-	index_from=section.index(A)-5
-	index_to=section.index(A)+5
-	del section[index_from:index_to]
-	print len(section)
-	average=np.mean(section)
-	st_deviation=np.std(section)
-	SNR=(A-average)/st_deviation
-	return SNR, average, st_deviation
+
+	
 
