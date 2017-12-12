@@ -22,21 +22,23 @@ from mpl_toolkits.mplot3d import Axes3D
 
 def create(fn='', bn='', pp='', fi='', outfile='', per=''):
 	size=os.path.getsize(fn)
-	headnumber=0
-	headcount=0
-	count=0
+	current_head=0
+	head_count=0
+	accum_periods=0
 	x=0
+	#measure the distance between sync words
 	with open(fn, 'rb') as sw:
 		sync=int(struct.unpack('i', sw.read(4))[0])
 		sync_search=0 
-		period=0
+		sync_distance=0
 		while sync_search!=sync:
-			period+=1
-			sw.seek(period)
+			sync_distance+=1
+			sw.seek(sync_distance)
 			sync_search=int(struct.unpack('i', sw.read(4))[0])
+		#all accumulation periods	
 		if per==0:
-			while headcount<size/period:
-				sw.seek(period*headnumber)
+			while head_count<size/sync_distance:
+				sw.seek(sync_distance*current_head)
 				sync=str(sw.read(4))
 				head_version,=struct.unpack('i', sw.read(4))
 				baseline_number,=struct.unpack('i', sw.read(4))
@@ -52,15 +54,15 @@ def create(fn='', bn='', pp='', fi='', outfile='', per=''):
 				V,=struct.unpack('d', sw.read(8))
 				W,=struct.unpack('d', sw.read(8))
 				if baseline_number==bn and polarisation_pair==pp and freq_index==fi:
-					count+=1
-				headnumber+=1
-				headcount+=1
+					accum_periods+=1
+				current_head+=1
+				head_count+=1
 
-			headcount=0
-			headnumber=0
-			data=np.zeros((count,64), dtype=np.complex)
-			while headcount<size/period:
-				sw.seek(period*headnumber)
+			head_count=0
+			current_head=0
+			data=np.zeros((accum_periods,64), dtype=np.complex)
+			while head_count<size/sync_distance:
+				sw.seek(sync_distance*current_head)
 				sync=str(sw.read(4))
 				head_version,=struct.unpack('i', sw.read(4))
 				baseline_number,=struct.unpack('i', sw.read(4))
@@ -80,14 +82,14 @@ def create(fn='', bn='', pp='', fi='', outfile='', per=''):
 						data[x,y]= complex(struct.unpack('f', sw.read(4))[0], 
 							struct.unpack('f', sw.read(4))[0])
 					x+=1
-				headcount+=1
-				headnumber+=1
-				print count
-			
-		else:
+				head_count+=1
+				current_head+=1
+			print 'all accumulation periods number:', accum_periods
+		#specified number of periods	
+		if per>0:
 			data=np.zeros((per,64), dtype=np.complex)
 			while x<per:
-				sw.seek(period*headnumber)
+				sw.seek(sync_distance*current_head)
 				sync=str(sw.read(4))
 				head_version,=struct.unpack('i', sw.read(4))
 				baseline_number,=struct.unpack('i', sw.read(4))
@@ -103,14 +105,12 @@ def create(fn='', bn='', pp='', fi='', outfile='', per=''):
 				V,=struct.unpack('d', sw.read(8))
 				W,=struct.unpack('d', sw.read(8))
 				if baseline_number==bn and polarisation_pair==pp and freq_index==fi:
-					print '\niteration\n', x
 					for y in range (64):
 						data[x,y]= complex(struct.unpack('f', sw.read(4))[0], 
 							struct.unpack('f', sw.read(4))[0])
 					x+=1
-				headcount+=1
-				headnumber+=1
-
+				head_count+=1
+				current_head+=1
 	np.save(outfile, data)
 	print data.shape
 	print data
@@ -144,7 +144,7 @@ def plot2D(s=''):
 	plt.plot(srez)
 	plt.show()
 
-def snr_u(s=''):
+def snr_1D(s=''):
 	t=np.load('outfile.npy')
 	srez=t[s,0:]
 	srez=srez.tolist()
