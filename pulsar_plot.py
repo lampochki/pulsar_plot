@@ -110,7 +110,6 @@ def snr_1D(fn='', per='', aver='', sect=''):
 	for x1 in range (aver):
 			for x in range (average):
 				aver_data[x1,0:]+=data[x1+aver*x,0:]
-
 	ifft_data=abs(fft.fftshift(fft.ifft(aver_data)))
 	section=ifft_data[sect,0:]
 	section=section.tolist()
@@ -121,7 +120,9 @@ def snr_1D(fn='', per='', aver='', sect=''):
 	average=np.mean(section)
 	st_deviation=np.std(section)
 	SNR=(A-average)/st_deviation
-	return SNR, average, st_deviation
+	return SNR
+
+	
 
 def plot(fn='', razr=''):
 	np.save('outfile', ifft_data)
