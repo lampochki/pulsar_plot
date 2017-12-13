@@ -132,10 +132,11 @@ def snr_1D(fn='', aver='', sect=''):
 		print SNR
 	return SNR_old
 
+
 def snr_all(fn='', aver='', sect=''):
 	periods=aver
 	all_data=np.load(fn)
-	while all_data.shape[0]-periods>aver:
+	while all_data.shape[0]-periods>=aver:
 		data=np.load(fn)[0:periods,0:]
 		average=data.shape[0]/aver
 		aver_data=np.zeros((aver,64), dtype=np.complex)
@@ -155,6 +156,26 @@ def snr_all(fn='', aver='', sect=''):
 		print'periods=',periods, 'snr=', SNR
 		periods+=aver
 		
+
+def find_max(fn=''):
+	peaks=[]
+	data=np.load(fn)
+	for aver in range (60,70):
+		average=data.shape[0]/aver
+		aver_data=np.zeros((aver,64), dtype=np.complex)
+		for x1 in range (aver):
+				for x in range (average):
+					aver_data[x1,0:]+=data[x1+aver*x,0:]
+		ifft_data=abs(fft.fftshift(fft.ifft(aver_data)))
+		ifft_data=ifft_data.tolist()
+		peak=max(max(ifft_data))
+		peaks.append(peak)
+	peak=max(peaks)
+	peak_index=peaks.index(peak)+60
+	print peak, peak_index
+
+
+
 
 def plot(fn='', razr=''):
 	np.save('outfile', ifft_data)
