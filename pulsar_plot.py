@@ -132,7 +132,29 @@ def snr_1D(fn='', aver='', sect=''):
 		print SNR
 	return SNR_old
 
-	
+def snr_all(fn='', aver='', sect=''):
+	periods=aver
+	all_data=np.load(fn)
+	while all_data.shape[0]-periods>aver:
+		data=np.load(fn)[0:periods,0:]
+		average=data.shape[0]/aver
+		aver_data=np.zeros((aver,64), dtype=np.complex)
+		for x1 in range (aver):
+				for x in range (average):
+					aver_data[x1,0:]+=data[x1+aver*x,0:]
+		ifft_data=abs(fft.fftshift(fft.ifft(aver_data)))
+		section=ifft_data[sect,0:]
+		section=section.tolist()
+		A=max(section)
+		index_from=section.index(A)-5
+		index_to=section.index(A)+5
+		del section[index_from:index_to]
+		average=np.mean(section)
+		st_deviation=np.std(section)
+		SNR=(A-average)/st_deviation
+		print'periods=',periods, 'snr=', SNR
+		periods+=aver
+		
 
 def plot(fn='', razr=''):
 	np.save('outfile', ifft_data)
