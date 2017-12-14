@@ -202,7 +202,7 @@ def plot(fn='', aver='',periods='', outfile=''):
 
 def plot2D(fn='', s=''):
 	ifft_data=np.load(fn)
-	section=ifft_data[s,0:]
+	section=ifft_data[0:,s]
 	print section
 	plt.plot(section)
 	plt.show()
