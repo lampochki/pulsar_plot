@@ -117,7 +117,7 @@ def snr_1D(fn='', aver='', sect=''):
 				for x in range (average):
 					aver_data[x1,0:]+=data[x1+aver*x,0:]
 		ifft_data=abs(fft.fftshift(fft.ifft(aver_data)))
-		section=ifft_data[sect,0:]
+		section=ifft_data[0:,sect]
 		section=section.tolist()
 		A=max(section)
 		index_from=section.index(A)-5
@@ -144,7 +144,7 @@ def snr_all(fn='', aver='', sect=''):
 				for x in range (average):
 					aver_data[x1,0:]+=data[x1+aver*x,0:]
 		ifft_data=abs(fft.fftshift(fft.ifft(aver_data)))
-		section=ifft_data[sect,0:]
+		section=ifft_data[0:,sect]
 		section=section.tolist()
 		A=max(section)
 		index_from=section.index(A)-5
@@ -153,7 +153,9 @@ def snr_all(fn='', aver='', sect=''):
 		average=np.mean(section)
 		st_deviation=np.std(section)
 		SNR=(A-average)/st_deviation
-		print'periods=',periods, 'snr=', SNR
+		per=periods/63
+		print'periods=',per 
+		print 'snr=' ,SNR
 		periods+=aver
 		
 
@@ -200,7 +202,7 @@ def plot(fn='', aver='',periods='', outfile=''):
  	np.save(outfile, ifft_data)
 	
 
-def plot2D(fn='', s=''):
+def plot2D(fn='',s=''):
 	ifft_data=np.load(fn)
 	section=ifft_data[0:,s]
 	print section
