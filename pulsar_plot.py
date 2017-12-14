@@ -160,6 +160,7 @@ def snr_all(fn='', aver='', sect=''):
 def find_max(fn=''):
 	peaks=[]
 	data=np.load(fn)
+	datan=data.tolist()
 	for aver in range (60,70):
 		average=data.shape[0]/aver
 		aver_data=np.zeros((aver,64), dtype=np.complex)
@@ -176,29 +177,35 @@ def find_max(fn=''):
 
 
 
-
-def plot(fn='', razr=''):
-	np.save('outfile', ifft_data)
-	x = np.arange (0, 64, 1)
-	y = np.arange (0, razr, 1)
-	xgrid, ygrid = np.meshgrid(x, y)
-	zgrid = ifft_data
-	x, y, z = xgrid,ygrid,zgrid
-	fig = pylab.figure()
-	axes = Axes3D(fig)
-	axes.plot_surface(x, y, z)
-	plt.xlabel('delay')
-	plt.ylabel('accumulation periods')
-	pylab.show()
+def plot(fn='', aver='',periods='', outfile=''):
+	periods=periods*aver
+ 	data=np.load(fn)[0:periods]
+ 	average=data.shape[0]/aver
+ 	new_data=np.zeros((aver,64), dtype=np.complex)
+ 	for x1 in range (aver):
+ 			for x in range (average):
+ 				new_data[x1,0:]+=data[x1+aver*x,0:]
+ 	ifft_data=abs(fft.fftshift(fft.ifft(new_data)))
+ 	x = np.arange (0, 64, 1)
+ 	y = np.arange (0, aver, 1)
+ 	xgrid, ygrid = np.meshgrid(x, y)
+ 	zgrid = ifft_data
+ 	x, y, z = xgrid,ygrid,zgrid
+ 	fig = pylab.figure()
+ 	axes = Axes3D(fig)
+ 	axes.plot_surface(x, y, z)
+ 	plt.xlabel('delay')
+ 	plt.ylabel('accumulation periods')
+ 	pylab.show()
+ 	np.save(outfile, ifft_data)
 	
 
-def plot2D(s=''):
-	ifft_data=np.load('outfile.npy')
+def plot2D(fn='', s=''):
+	ifft_data=np.load(fn)
 	section=ifft_data[s,0:]
 	print section
 	plt.plot(section)
 	plt.show()
-
 
 	
 
