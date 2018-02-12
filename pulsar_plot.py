@@ -109,7 +109,6 @@ def create(fn='', bn='', pp='', fi='', outfile='', per=''):
 	print data
 
 
-#147 2 258 and 152 156
 def plot(fn=''):
  	data=np.load(fn)
  	ifft_data=abs(fft.fftshift(fft.ifft(data)))
