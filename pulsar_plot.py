@@ -1,14 +1,23 @@
+
 import struct
 import os
 import numpy as np
+np.set_printoptions(threshold=np.inf)
 import matplotlib.pyplot as plt
 import numpy.fft as fft
 import pylab
 from mpl_toolkits.mplot3d import Axes3D
 
-#pulsar_plot.create('DIFX_56341_040423.s0000.b0000', 258, 'RR', 0, 'filname',0)
+from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
+import plotly.offline as py
+import plotly.graph_objs as go
+from plotly import tools
 
-#pulsar_plot.create('DIFX_56341_040423.', 258, 'RR', 0, '2sec258ch0all',0)
+
+
+#pulsar_plot.create('DIFX_56341_040423.s0000.b0000', 258, 'RR', 1, '258ch1all',0)
+
+#pulsar_plot.create('DIFX_56341_040423.s0000.b0000_2sec', 258, 'RR', 0, '2sec258ch0all',0)
 
 #pulsar_plot.create('DIFX_57844_018000.s0000.b0000', 258, 'RR', 0, 'qaz")
 
@@ -109,17 +118,19 @@ def create(fn='', bn='', pp='', fi='', outfile='', per=''):
 	print data.shape
 	print data
 
+#pp.create('DIFX_56341_040423.s0000.b0000_2sec', 258, 'RR', 2, '2sec258ch12all',350)
+
 
 def plot(fn='', aver='',periods='', outfile=''):
 	periods=periods*aver
  	data=np.load(fn)[0:periods]
- 	spec_chan=all_data.shape[1]
- 	average=data.shape[0]/aver
- 	new_data=np.zeros((aver,spec_chan), dtype=np.complex)
- 	for x1 in range (aver):
- 			for x in range (average):
- 				new_data[x1,0:]+=data[x1+aver*x,0:]
- 	ifft_data=abs(fft.fftshift(fft.ifft(new_data)))
+ 	spec_chan=data.shape[1]
+ 	data_aver=np.zeros((aver,spec_chan), dtype=np.complex)
+	for i in range(aver):
+		for x in range(i,periods,aver):
+			data_aver[i]+=data[x]
+	print np.shape(data_aver)
+ 	ifft_data=abs(fft.ifft(data_aver))
  	x = np.arange (0, spec_chan, 1)
  	y = np.arange (0, aver, 1)
  	xgrid, ygrid = np.meshgrid(x, y)
@@ -133,7 +144,9 @@ def plot(fn='', aver='',periods='', outfile=''):
  	axes.view_init(0, 90)
  	pylab.show()
  	np.save(outfile, ifft_data)
-
+ 	
+# 115 123 147 156 161
+#177 180
 
 def plot2D(fn='',s='', outfile=''):
 	data=np.load(fn)
@@ -145,29 +158,31 @@ def plot2D(fn='',s='', outfile=''):
 	plt.show()
 
 
-def plots(fn=''):
+def plots(fn='',average='',start=''):
 	data=np.load(fn)
 	spec_chan=data.shape[1]
 	window_number=1
+	stop=start+4
 	fig=plt.figure()
-	for aver in range (120,124):
-		average=data.shape[0]/aver
+	for aver in range (start,stop):
+		periods=aver*average
 		aver_data=np.zeros((aver,spec_chan), dtype=np.complex)
-		for x1 in range (aver):
-				for x in range (average):
-					aver_data[x1,0:]+=data[x1+aver*x,0:]
-		ifft_data=abs(fft.fftshift(fft.ifft(aver_data)))
+		for i in range(aver):
+			for x in range(i,periods,aver):
+				aver_data[i]+=data[x]
+		ifft_data=abs(fft.ifft(aver_data))
 		ax=fig.add_subplot(2,2,window_number,projection='3d')
 		x = np.arange (0, spec_chan, 1)
  		y = np.arange (0, aver, 1)
  		xgrid, ygrid = np.meshgrid(x, y)
  		zgrid = ifft_data
  		x, y, z = xgrid,ygrid,zgrid
+ 		ax.view_init(0, 270)
  		surf=ax.plot_surface(x,y,z)
  		plt.xlabel('delay')
  		plt.ylabel('accumulation periods')
+ 		plt.title(aver)
  		window_number+=1
- 		ax.view_init(0, 90)
  	pylab.show()
 
 
@@ -261,4 +276,121 @@ def find_max(fn=''):
 	peak=max(peaks)
 	peak_index=peaks.index(peak)+60
 	print peak, peak_index
+	'''
+
+def example(fn='', aver='',periods='', outfile=''):
+	periods=periods*aver
+ 	data=np.load(fn)[0:periods]
+ 	spec_chan=1
+ 	data_aver=np.zeros((aver,spec_chan), dtype=np.complex)
+	for i in range(aver):
+		for x in range(i,periods,aver):
+			data_aver[i]+=data[x]
+ 	ifft_data=abs(fft.fftshift(fft.ifft(data_aver)))
+ 	x = np.arange (0, spec_chan, 1)
+ 	y = np.arange (0, aver, 1)
+ 	xgrid, ygrid = np.meshgrid(x, y)
+ 	zgrid = ifft_data
+ 	x, y, z = xgrid,ygrid,zgrid
+ 	fig = pylab.figure()
+ 	axes = Axes3D(fig)
+ 	axes.plot_surface(x, y, z)
+ 	plt.xlabel('delay')
+ 	plt.ylabel('accumulation periods')
+ 	axes.view_init(0, 90)
+ 	pylab.show()
+ 	np.save(outfile, ifft_data)
+ 	'''
+ 
+
+def search(fn='',w='',k=''):
+	d=330+k
+ 	data=np.load(fn)[0:d]
+ 	print np.shape(data)
+ 	new_data=np.zeros((160),dtype=np.complex)
+ 	for a in range(k,k+30,1):
+ 		new_data=+data[a]
+ 		print a
+ 	k+=30
+ 	data=abs(fft.ifft(new_data))
+ 	print data.shape
+ 	print (data)
+ 	plt.figure
+ 	plt.plot(data)
+ 	plt.show()  
+
+def new(fn=''):
+	data1=np.load(fn)[:329]
+	print np.shape(data1)
+	data2=np.load(fn)[330:659]
+	print np.shape(data2)
+	data3=np.load(fn)[660:989]
+	data = data1+data2+data3
+	data.transpose()
+ 	ifft_data=abs(fft.ifft(data))
+ 	ifft_data.transpose()
+ 	x = np.arange (0, 160, 1)
+ 	y = np.arange (0, 329, 1)
+ 	xgrid, ygrid = np.meshgrid(x, y)
+ 	zgrid = ifft_data
+ 	x, y, z = xgrid,ygrid,zgrid
+ 	fig = pylab.figure()
+ 	axes = Axes3D(fig)
+ 	axes.plot_surface(x, y, z)
+ 	plt.xlabel('delay')
+ 	plt.ylabel('accumulation periods')
+ 	axes.view_init(0, 90)
+ 	pylab.show()
+
+def plotl(fn='', aver='',periods='', outfile=''):
+	periods=periods*aver
+ 	data=np.load(fn)[0:periods]
+ 	spec_chan=data.shape[1]
+ 	data_aver=np.zeros((aver,spec_chan), dtype=np.complex)
+	for i in range(aver):
+		for x in range(i,periods,aver):
+			data_aver[i]+=data[x]
+	print np.shape(data_aver)
+ 	ifft_data=abs(fft.ifft(data_aver))
+
+ 	data = [
+ 	go.Surface(
+ 		z=ifft_data
+ 		)
+ 	]
+ 	layout=go.Layout(
+ 		title='delays',
+ 		xaxis=dict(
+ 			title='delays'),
+ 		yaxis=dict(
+ 			title='accumulation periods')
+ 		)
+ 	fig = go.Figure(data=data, layout=layout)
+ 	py.plot(fig)
+
+
+def plotls(fn='',average='',start=''):
+	data=np.load(fn)
+	spec_chan=data.shape[1]
+	row=1
+	col=1
+	stop=start+4
+	fig = tools.make_subplots(rows=2, cols=2,
+		specs=[[{'is_3d': True}, {'is_3d': True}],
+                                 [{'is_3d': True}, {'is_3d': True}]])
+	for aver in range (start,stop):
+		periods=aver*average
+		aver_data=np.zeros((aver,spec_chan), dtype=np.complex)
+		for i in range(aver):
+			for x in range(i,periods,aver):
+				aver_data[i]+=data[x]
+		ifft_data=abs(fft.ifft(aver_data))
+ 		if col>2:
+ 			col=1
+ 			row=2
+		fig.append_trace(go.Surface(z=ifft_data),row,col)
+		col+=1
+
+	py.plot(fig)
+
 
